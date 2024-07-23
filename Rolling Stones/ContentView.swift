@@ -24,11 +24,15 @@ struct ContentView: View {
     @State private var engine: CHHapticEngine?
     
     @State private var timer: Timer?
-    @State private var time = 5
+    @State private var time = 10
     @State private var isActive = false
     
     @State private var size = 1.0
     @State private var animationAmount = 0.0
+    
+    init() {
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+    }
     
     var body: some View {
         NavigationStack {
@@ -39,21 +43,28 @@ struct ContentView: View {
                     VStack {
                         Form {
                             Section {
-                                Stepper("Number of Dice: \(numberOfDice)", value: $numberOfDice)
+                                //  Stepper("Number of Dice: \(numberOfDice)", value: $numberOfDice, in: 2...100)
                                 
-                                Stepper {
-                                    numberOfSides += 2
-                                } onDecrement: {
-                                    numberOfSides -= 2
-                                } label: {
-                                    Text("Number of Sides: \(numberOfSides)")
+                                
+                                
+                                Picker("Dices", selection: $numberOfDice) {
+                                    ForEach(2...100, id: \.self) {
+                                        Text("\($0)")
+                                    }
                                 }
                                 
-                                Button("Roll") {
-                                    startRolling()
+                                Picker("Sides", selection: $numberOfSides) {
+                                    ForEach(2...100, id: \.self) { i in
+                                        if i % 2 == 0 {
+                                            Text("\(i)")
+                                        }
+                                    }
                                 }
+                                
+                                
                             }
                             .listRowBackground(Color.white.opacity(0.5))
+                            .shadow(radius: 5)
                             
                         }
                         .tint(.orange)
@@ -64,29 +75,43 @@ struct ContentView: View {
                         ZStack {
                             ForEach(0..<numberOfDice, id: \.self) { index in
                                 Circle()
-                                    .stroke(Color.red, lineWidth: CGFloat(1 + index))
+                                    .stroke(Color.orange, lineWidth: CGFloat(1 + index))
                                     .frame(width: 150)
                                     .scaleEffect(size + Double(index) / 4 + 0.2)
+                                    .rotation3DEffect(.degrees(animationAmount), axis: (x: 1, y: 1, z: 0))
+                                    .shadow(radius: 5)
                             }
                             
+                            ZStack {
+                                Circle()
+                                    .fill(.orange)
+                                    .frame(width: 140)
+                                    .shadow(radius: 5)
                                 
-                            Circle()
-                                .fill(.orange)
-                                .frame(width: 150)
-                                .rotation3DEffect(.degrees(animationAmount), axis: (x: 1, y: 1, z: 1))
+                                Circle()
+                                    .fill(.white.opacity(0.5))
+                                    .frame(width: 120)
+                                    .shadow(radius: 5)
+                                
+                                VStack {
+                                    Text("Score")
+                                        .font(.headline)
+                                        .foregroundStyle(.white)
+                                    
+                                    Text("\(totalScore)")
+                                        .font(.largeTitle)
+                                        .foregroundStyle(.white)
+                                }
+                            }
+                            .scaleEffect(size + 0.1)
                             
-                            VStack {
-                                Text("Score")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
-                                
-                                Text("\(totalScore)")
-                                    .font(.largeTitle)
-                                    .foregroundStyle(.white)
+                            .onTapGesture {
+                                startRolling()
                             }
                         }
-                           
                         
+                        
+                        Spacer()
                         Spacer()
                         
                     }
@@ -100,10 +125,13 @@ struct ContentView: View {
                 .onAppear {
                     prepareHaptics()
                 }
+                
             }
             .sheet(isPresented: $isShowingHostory) {
                 HistoryView()
             }
+            .tint(.white)
+            .navigationTitle("Rolling Stones")
         }
     }
     
@@ -115,7 +143,7 @@ struct ContentView: View {
         roll()
         complexRoll()
         
-        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { _ in
             guard isActive else { return }
             if time > 0 {
                 time -= 1
@@ -124,7 +152,7 @@ struct ContentView: View {
                         size += 0.4
                         animationAmount += 360
                     } else {
-                       // size -= 0.4
+                        // size -= 0.4
                     }
                 }
                 
@@ -147,7 +175,9 @@ struct ContentView: View {
         for dice in 0..<numberOfDice {
             let randomNumber = Int.random(in: 1...numberOfSides)
             print("Dice: \(dice), Number: \(randomNumber)")
-            totalScore += randomNumber
+            withAnimation {
+                totalScore += randomNumber
+            }
         }
     }
     
