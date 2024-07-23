@@ -75,10 +75,11 @@ struct ContentView: View {
                         ZStack {
                             ForEach(0..<numberOfDice, id: \.self) { index in
                                 Circle()
-                                    .stroke(Color.orange, lineWidth: CGFloat(1 + index))
+                                    .stroke(Color.orange, lineWidth: CGFloat(1 + index / 2))
                                     .frame(width: 150)
-                                    .scaleEffect(size + Double(index) / 4 + 0.2)
-                                    .rotation3DEffect(.degrees(animationAmount), axis: (x: 1, y: 1, z: 0))
+                                    .scaleEffect(isActive ? size + Double(index) / 4 + 0.2 : 1)
+                                    .rotation3DEffect(.degrees(animationAmount), axis: (x: index % 2 == 0 ? 1 : 0,
+                                                                                        y: index % 2 == 0 ? 0 : 1, z: 0))
                                     .shadow(radius: 5)
                             }
                             
@@ -137,7 +138,9 @@ struct ContentView: View {
     
     func startRolling() {
         time = 5
-        isActive = true
+        withAnimation {
+            isActive = true
+        }
         totalScore = 0
         
         roll()
@@ -161,7 +164,9 @@ struct ContentView: View {
                 timer?.invalidate()
                 let history = History(numberOfDice: numberOfDice, totalScore: totalScore)
                 modelContext.insert(history)
-                isActive = false
+                withAnimation {
+                    isActive = false
+                }
                 withAnimation(.smooth(duration: 1)) {
                     size = 1
                 }
