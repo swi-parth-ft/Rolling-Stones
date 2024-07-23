@@ -27,28 +27,70 @@ struct ContentView: View {
     @State private var time = 5
     @State private var isActive = false
     
+    @State private var size = 1.0
+    @State private var animationAmount = 0.0
+    
     var body: some View {
         NavigationStack {
             VStack {
-                Form {
-                    Stepper("Number of Dice: \(numberOfDice)", value: $numberOfDice)
-                    
-                    Stepper {
-                        numberOfSides += 2
-                    } onDecrement: {
-                        numberOfSides -= 2
-                    } label: {
-                        Text("Number of Sides: \(numberOfSides)")
+                ZStack {
+                    LinearGradient(colors: [.orange, .white], startPoint: .top, endPoint: .bottom)
+                        .ignoresSafeArea()
+                    VStack {
+                        Form {
+                            Section {
+                                Stepper("Number of Dice: \(numberOfDice)", value: $numberOfDice)
+                                
+                                Stepper {
+                                    numberOfSides += 2
+                                } onDecrement: {
+                                    numberOfSides -= 2
+                                } label: {
+                                    Text("Number of Sides: \(numberOfSides)")
+                                }
+                                
+                                Button("Roll") {
+                                    startRolling()
+                                }
+                            }
+                            .listRowBackground(Color.white.opacity(0.5))
+                            
+                        }
+                        .tint(.orange)
+                        .frame(height: 200)
+                        .scrollContentBackground(.hidden)
+                        
+                        Spacer()
+                        ZStack {
+                            ForEach(0..<numberOfDice, id: \.self) { index in
+                                Circle()
+                                    .stroke(Color.red, lineWidth: CGFloat(1 + index))
+                                    .frame(width: 150)
+                                    .scaleEffect(size + Double(index) / 4 + 0.2)
+                            }
+                            
+                                
+                            Circle()
+                                .fill(.orange)
+                                .frame(width: 150)
+                                .rotation3DEffect(.degrees(animationAmount), axis: (x: 1, y: 1, z: 1))
+                            
+                            VStack {
+                                Text("Score")
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                                
+                                Text("\(totalScore)")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                           
+                        
+                        Spacer()
+                        
                     }
-                    
-                    Button("Roll") {
-                        startRolling()
-                    }
-                    
                 }
-                
-                Text("Your Score is: \(totalScore)")
-                    .font(.headline)
             }
             .toolbar {
                 Button("History", systemImage: "clock") {
@@ -77,12 +119,24 @@ struct ContentView: View {
             guard isActive else { return }
             if time > 0 {
                 time -= 1
+                withAnimation(.smooth(duration: 1)) {
+                    if size == 1 {
+                        size += 0.4
+                        animationAmount += 360
+                    } else {
+                       // size -= 0.4
+                    }
+                }
+                
                 roll()
             } else {
                 timer?.invalidate()
                 let history = History(numberOfDice: numberOfDice, totalScore: totalScore)
                 modelContext.insert(history)
                 isActive = false
+                withAnimation(.smooth(duration: 1)) {
+                    size = 1
+                }
             }
         }
     }
