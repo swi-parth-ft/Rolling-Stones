@@ -162,7 +162,7 @@ struct ContentView: View {
                 roll()
             } else {
                 timer?.invalidate()
-                let history = History(numberOfDice: numberOfDice, totalScore: totalScore)
+                let history = History(numberOfDice: numberOfDice, numberOfSides: numberOfSides, totalScore: totalScore)
                 modelContext.insert(history)
                 withAnimation {
                     isActive = false

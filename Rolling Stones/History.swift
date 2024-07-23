@@ -11,10 +11,12 @@ import SwiftData
 @Model
 class History {
     var numberOfDice: Int
+    var numberOfSides: Int
     var totalScore: Int
     
-    init(numberOfDice: Int, totalScore: Int) {
+    init(numberOfDice: Int, numberOfSides: Int, totalScore: Int) {
         self.numberOfDice = numberOfDice
+        self.numberOfSides = numberOfSides
         self.totalScore = totalScore
     }
 }

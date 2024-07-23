@@ -17,20 +17,35 @@ struct HistoryView: View {
             ZStack {
                 LinearGradient(colors: [.orange, .white], startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
-                List(histories) { history in
-                    VStack {
-                        Text("\(history.numberOfDice) Dices Rolled")
-                            .font(.headline)
-                        Text("Score was \(history.totalScore)!")
-                            .foregroundStyle(.secondary)
+                List {
+                    ForEach(histories) { history in
+                        VStack(alignment: .leading) {
+                            Text("\(history.numberOfDice) Dices Rolled with \(history.numberOfSides) sides each")
+                                .font(.headline)
+                            Text("Score was \(history.totalScore)!")
+                                .foregroundStyle(.secondary)
+                        }
+                        .listRowBackground(Color.white.opacity(0.5))
                     }
-                    .listRowBackground(Color.white.opacity(0.5))
+                    .onDelete(perform: deleteHistory)
+                    
                     
                 }
                 .scrollContentBackground(.hidden)
             }
+            .navigationTitle("History")
         }
-        .navigationTitle("History")
+        
+        
+        
+    }
+    func deleteHistory(at offsets: IndexSet) {
+        for index in offsets {
+            let history = histories[index]
+            modelContext.delete(history)
+        }
+        
+        try? modelContext.save()
     }
 }
 
